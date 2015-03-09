@@ -1,25 +1,34 @@
 var gulp = require('gulp');
 var run = require('gulp-run');
-var watch = require('gulp-watch');
+var bowerFiles = require('main-bower-files');
+var inject = require('gulp-inject');
 
-gulp.task('default', function() {
-	console.log('1. `gulp.task()` -> create a task');
-	console.log('2. `gulp.run()` -> run a task');
-	console.log('3. `gulp.watch()` -> watch files');
-	console.log('4. `gulp.src()` -> matchs files');
-	console.log('5. `gulp.dest()` -> write files');
+
+gulp.task("copy-scripts", function(){
+	gulp.src(
+		[
+			'./app/**/*.js'
+		],
+		{base: './app/'})
+	.pipe(gulp.dest('build'));
 });
 
-gulp.task('run', function() {
-	run('echo Hello World').exec();
-})
-
-gulp.task('watch', function() {
-	watch('gulpfile.js')
-		.pipe(run('echo gulpfile.js has been changed')).exec()
-})
-
-gulp.task('src-dest', function() {
+gulp.task("inject-bower-includes", function(){
 	gulp.src('app/index.html')
-		.pipe(gulp.dest('build/'));
-})
+		.pipe(
+			inject(
+				gulp.src(
+					bowerFiles(),
+					{read: false}
+				),
+				{
+					name: 'bower',
+					relative: true,
+					ignorePath: '/app/'
+				}
+			)
+		)
+		.pipe(gulp.dest('./build'));
+});
+
+gulp.task('default', ['copy-scripts', 'inject-bower-includes']);
